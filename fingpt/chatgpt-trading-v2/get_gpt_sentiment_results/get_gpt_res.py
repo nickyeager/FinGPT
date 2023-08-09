@@ -4,7 +4,7 @@ from tqdm import tqdm
 import openai
 import pickle
 import time
-from token_ import OPEN_AI_TOKEN
+OPEN_AI_TOKEN = "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"
 
 openai.api_key = OPEN_AI_TOKEN
 df = pd.read_csv("df.csv",index_col= 0)
@@ -44,7 +44,7 @@ def save_dict(dic,evo):
 evo = 0
 while len(sentences)>0:
     remain = len(sentences)
-    print(f"{evo}: {remain}")
+    #print(f"{evo}: {remain}")
     evo += 1
     save_dict(res_dict,evo)
     to_predict = sentences[:20]
