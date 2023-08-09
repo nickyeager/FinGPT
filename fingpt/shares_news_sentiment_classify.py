@@ -109,7 +109,7 @@ def get_result_from_openai_davinci(api_key: str, prompt_str: str):
     max_tokens = 64
 
     # openai.api_key =
-    openai.api_key = api_key  # os.getenv("OPENAI_API_KEY")
+    openai.api_key = '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'
 
     response = openai.Completion.create(
         model="text-davinci-003",
@@ -148,5 +148,5 @@ def run_news_in_english():
 
 
 if __name__ == '__main__':
-    run_news_in_chinese()
+    #run_news_in_chinese()
     run_news_in_english()

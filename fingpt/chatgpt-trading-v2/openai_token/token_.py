@@ -1,2 +1,2 @@
 
-OPEN_AI_TOKEN = "your-api-token"
+OPEN_AI_TOKEN = "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"
