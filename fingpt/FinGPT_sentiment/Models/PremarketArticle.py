@@ -4,3 +4,4 @@ class PremarketArticle:
         self.link = link
         self.timestamp = None
         self.ticker_sentiments = []
+        self.side = None
