@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "invalid_api_token",
+    "message": "An invalid API token was supplied."
+  }
+}
