@@ -31,4 +31,4 @@ jobs:
           ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
           ALPACA_URL: ${{ secrets.ALPACA_URL }}
-        run: python fingpt/premarket_sentiment
+        run: python fingpt/premarket_sentiment.py
