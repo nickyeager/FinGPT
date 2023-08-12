@@ -29,7 +29,7 @@ def find_news_item_by_headline(news_items, target_headline):
     return None
 
 def get_historic_client():
-    return StockHistoricalDataClient("PKC4NOQ50FZYDSDTA30H", "I1OOp7YE6zlIw2auuGULyWG0C8KLoZhacxdEUT07")
+    return StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET)
 
 def get_historic_data(ticker: str, client: StockHistoricalDataClient):
     snapshot_request = StockSnapshotRequest(symbol_or_symbols=ticker)
@@ -66,6 +66,8 @@ def convert_message_to_side(message: str):
         return 'none'
 
 def place_trades(client: REST, news_items: PremarketArticle):
+
+
     # query your current account. See if a position is already in place for that particular ticker. See if we've closed out that position today.
     positions = client.list_positions()
     if len(positions) > 0:
@@ -77,6 +79,8 @@ def place_trades(client: REST, news_items: PremarketArticle):
             has_order = len(orders) and [x for x in orders if x.symbol == article.ticker]
             has_position = len(positions) and article.ticker in positions.index
             if has_order == False and has_position == False:
+                snapshot = get_historic_data(client=client, ticker=article.ticker)
+
                 side = article.side
                 try:
                     client.submit_order(symbol=article.ticker, qty=1, side=side)
@@ -136,7 +140,7 @@ def get_cnbc_premarket():
             ticker_sentiment.parent = found_news_item
             found_news_item.ticker_sentiments.append(ticker_sentiment)
 
-    snapshot_client = get_historic_client()
+    # snapshot_client = get_historic_client()
     # for news_item in news_items:
     #     for article in news_item.ticker_sentiments:
     #         snapshot = get_historic_data(article.ticker, snapshot_client)
