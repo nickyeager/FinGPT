@@ -1,10 +1,12 @@
 name: run premarket_sentiment.py
 
 on:
+  push:
+    branches:
+      - master
   schedule:
-    - cron:  '0 10 * * *'
-    # This runs at 10:00 AM UTC each day.
-    # * is a special character in YAML so you have to quote this string
+    # Runs ever 5 minutues
+    - cron:  '*/5 * * * *'
 
 jobs:
   build:
@@ -23,16 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: execute py script # run main.py
+      - name: execute py script # run premarket_sentiment.
         env:
           OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
           ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
           ALPACA_URL: ${{ secrets.ALPACA_URL }}
         run: python fingpt/premarket_sentiment
-      - name: commit files
-        run: |
-          git config --local user.email "yeag123@gmail.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
