@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - master
-  schedule:
+#  schedule:
     # Runs ever 5 minutues
-    - cron:  '*/5 * * * *'
+#    - cron:  '*/5 * * * *'
 
 jobs:
   build:
@@ -25,6 +25,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r fingpt/requirements.txt
+
+      - name: Show environment variables
+        run: |
+          env
 
       - name: execute py script # run premarket_sentiment.
         env:
