@@ -14,5 +14,11 @@ tushare
 alpaca-trade-api
 alpaca-py
 
+# html parsing
+beautifulsoup4
+
+#openai
+openai
+
 #environment variables
 python-dotenv
