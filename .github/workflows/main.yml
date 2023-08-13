@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content
@@ -29,6 +30,12 @@ jobs:
       - name: Show environment variables
         run: |
           env
+
+      - name: Test env vars for python
+        run: python -c 'import os;print(os.environ)'
+        env:
+          ENV_SECRET: ${{ secrets.ENV_SECRET }}
+          REPO_SECRET: ${{ secrets.REPO_SECRET }}
 
       - name: execute py script # run premarket_sentiment.
         env:
