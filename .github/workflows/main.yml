@@ -27,16 +27,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r fingpt/requirements.txt
 
-      - name: Show environment variables
-        run: |
-          env
-
-      - name: Test env vars for python
-        run: python -c 'import os;print(os.environ)'
-        env:
-          ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
-          ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
-
       - name: execute py script # run premarket_sentiment.
         env:
           OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}

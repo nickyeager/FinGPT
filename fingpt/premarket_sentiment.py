@@ -79,7 +79,7 @@ def place_trades(client: REST, news_items: PremarketArticle):
             has_order = len(orders) and [x for x in orders if x.symbol == article.ticker]
             has_position = len(positions) and article.ticker in positions.index
             if has_order == False and has_position == False:
-                snapshot = get_historic_data(client=client, ticker=article.ticker)
+                # snapshot = get_historic_data(client=client, ticker=article.ticker)
 
                 side = article.side
                 try:
@@ -104,7 +104,7 @@ def get_cnbc_premarket():
         news_items.append(news_item)
         headlines.append(headline.text.strip())
 
-    news_items = news_items[:3]
+    news_items = news_items[:6]
     # Step 2: Filter headlines containing the word "premarket"
     premarket_headlines = [headline for headline in headlines if 'premarket' in headline.lower()]
     # Step 3: Visit each link, fetch content, and extract articles and tickers
