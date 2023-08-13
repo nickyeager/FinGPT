@@ -34,8 +34,8 @@ jobs:
       - name: Test env vars for python
         run: python -c 'import os;print(os.environ)'
         env:
-          ENV_SECRET: ${{ secrets.ENV_SECRET }}
-          REPO_SECRET: ${{ secrets.REPO_SECRET }}
+          ALPACA_KEY: ${{ variables.ALPACA_KEY }}
+          ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
 
       - name: execute py script # run premarket_sentiment.
         env:
