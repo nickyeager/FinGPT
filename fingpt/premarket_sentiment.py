@@ -78,22 +78,26 @@ def place_trades(client: REST, news_items: PremarketArticle):
     for news_item in news_items:
         article_timestamp = datetime.strptime(news_items[0].timestamp, timestamp_format)
         for article in news_item.ticker_sentiments:
-            has_order = len(orders) and [x for x in orders if x.symbol == article.ticker]
-            has_position = len(positions) and article.ticker in positions.index
-
-            if has_order == False and has_position == False:
-                snapshot = get_historic_data(client=snapshot_client, ticker=article.ticker)
+            ticker = None
+            try:
+                ticker = article.ticker
+            except:
+                print("Ticker isn't defined")
+            has_order = ticker and len(orders) and [x for x in orders if x.symbol == ticker]
+            has_position = ticker and len(positions) and article.ticker in positions.index
+            if has_order is False and has_position is False:
+                snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
-                last_trade_time = snapshot[article.ticker].latest_trade.timestamp
+                last_trade_time = snapshot[ticker].latest_trade.timestamp
                 side = article.side
                 if last_trade_time.date() == article_timestamp.date() and current_timestamp.date() == article_timestamp.date():
                     try:
-                        current_price = snapshot[article.ticker].latest_trade.price
+                        current_price = snapshot[ticker].latest_trade.price
                         trailing_price = 3  # Trailing stop percentage
                         trailing_loss_price = -3
                         trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
                         trailing_take_profit = current_price * (1 - trailing_price / 100)
-                        order = client.submit_order(symbol=article.ticker, qty=1, side=side, type="limit", limit_price=current_price, stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_take_profit}, time_in_force="gtc")
+                        order = client.submit_order(symbol=ticker, qty=1, side=side, type="limit", limit_price=current_price, stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_take_profit}, time_in_force="gtc")
                         print(order)
                     except Exception as inst:
                         print(inst)
