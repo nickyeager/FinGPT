@@ -85,7 +85,7 @@ def place_trades(client: REST, news_items: PremarketArticle):
                 print("Ticker isn't defined")
             has_order = ticker and len(orders) and [x for x in orders if x.symbol == ticker]
             has_position = ticker and len(positions) and article.ticker in positions.index
-            if has_order is False and has_position is False:
+            if has_order == False and has_position == False:
                 snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
                 last_trade_time = snapshot[ticker].latest_trade.timestamp
@@ -116,7 +116,7 @@ def get_cnbc_premarket():
     for headline in soup.find_all('a',
                                   class_='Card-title'):  # Adjust the class according to the website's HTML structure
         headline_text = headline.text.strip()
-        is_premarket_headline = 'premarket' in headline_text.lower()
+        is_premarket_headline = 'premarket' in headline_text.lower() or 'before the bell' in headline_text.lower()
         if is_premarket_headline:
             news_item = PremarketArticle.PremarketArticle(headline_text, headline['href'])
             news_items.append(news_item)
