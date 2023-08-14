@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-     Runs ever 5 minutues
+     #Runs ever 15 minutues
     - cron:  '*/15 * * * *'
 
 jobs:
