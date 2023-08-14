@@ -1,6 +1,6 @@
 
 import pandas as pd
-
+from datetime import datetime
 import openai
 
 import requests
@@ -66,53 +66,62 @@ def convert_message_to_side(message: str):
         return 'none'
 
 def place_trades(client: REST, news_items: PremarketArticle):
-
-
     # query your current account. See if a position is already in place for that particular ticker. See if we've closed out that position today.
+    snapshot_client = get_historic_client()
     positions = client.list_positions()
+    current_timestamp = datetime.now()
+    timestamp_format = '%Y-%m-%dT%H:%M:%S%z'
     if len(positions) > 0:
         positions = pd.DataFrame([position._raw for position in positions])
         positions.set_index('symbol', inplace=True)
     orders = client.list_orders()
     for news_item in news_items:
+        article_timestamp = datetime.strptime(news_items[0].timestamp, timestamp_format)
         for article in news_item.ticker_sentiments:
             has_order = len(orders) and [x for x in orders if x.symbol == article.ticker]
             has_position = len(positions) and article.ticker in positions.index
-            if has_order == False and has_position == False:
-                # snapshot = get_historic_data(client=client, ticker=article.ticker)
 
+            if has_order == False and has_position == False:
+                snapshot = get_historic_data(client=snapshot_client, ticker=article.ticker)
+                # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
+                last_trade_time = snapshot[article.ticker].latest_trade.timestamp
                 side = article.side
-                try:
-                    client.submit_order(symbol=article.ticker, qty=1, side=side)
-                except Exception as inst:
-                    print(inst)
+                if last_trade_time.date() == article_timestamp.date() and current_timestamp.date() == article_timestamp.date():
+                    try:
+                        current_price = snapshot[article.ticker].latest_trade.price
+                        trailing_price = 3  # Trailing stop percentage
+                        trailing_loss_price = -3
+                        trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
+                        trailing_take_profit = current_price * (1 - trailing_price / 100)
+                        order = client.submit_order(symbol=article.ticker, qty=1, side=side, type="limit", limit_price=current_price, stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_take_profit}, time_in_force="gtc")
+                        print(order)
+                    except Exception as inst:
+                        print(inst)
 
 
 def get_cnbc_premarket():
+    # news_item = PremarketArticle.PremarketArticle("Test Headline premarket", "https://www.cnbc.com/2023/08/11/stocks-moving-most-premarket-six-flags-ionq-archer-aviation-more.html")
+
     url = 'https://cnbc.com/market-insider/'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
     headlines = []
-    links = []
-    nodes = []
-
     news_items = []
+    # only care about premarket headlines for now
     for headline in soup.find_all('a',
                                   class_='Card-title'):  # Adjust the class according to the website's HTML structure
-        news_item = PremarketArticle.PremarketArticle(headline.text.strip(), headline['href'])
-        news_items.append(news_item)
-        headlines.append(headline.text.strip())
+        headline_text = headline.text.strip()
+        is_premarket_headline = 'premarket' in headline_text.lower()
+        if is_premarket_headline:
+            news_item = PremarketArticle.PremarketArticle(headline_text, headline['href'])
+            news_items.append(news_item)
+            headlines.append(headline_text)
 
-    news_items = news_items[:6]
-    # Step 2: Filter headlines containing the word "premarket"
-    premarket_headlines = [headline for headline in headlines if 'premarket' in headline.lower()]
+    news_items = news_items[:1]
     # Step 3: Visit each link, fetch content, and extract articles and tickers
-    for headline in premarket_headlines:
+    for found_news_item in news_items:
 
-        found_news_item = find_news_item_by_headline(news_items, headline)
-        if (found_news_item == None):
-            break
         article_response = requests.get(found_news_item.link)
         article_soup = BeautifulSoup(article_response.content, 'html.parser')
         time = article_soup.find('time').get('datetime')
@@ -140,12 +149,7 @@ def get_cnbc_premarket():
             ticker_sentiment.parent = found_news_item
             found_news_item.ticker_sentiments.append(ticker_sentiment)
 
-    # snapshot_client = get_historic_client()
-    # for news_item in news_items:
-    #     for article in news_item.ticker_sentiments:
-    #         snapshot = get_historic_data(article.ticker, snapshot_client)
-    #         print(snapshot)
-    # print(news_items)
+
     api_key = ALPACA_KEY
     secret = ALPACA_SECRET
     paper_url = ALPACA_URL
@@ -153,6 +157,10 @@ def get_cnbc_premarket():
     url = URL(paper_url)
 
     a_client = REST(key_id=api_key, secret_key=secret, base_url=url)
+    a_client.cancel_all_orders()
+
+
+    snapshot_client = get_historic_client()
     place_trades(client=a_client, news_items=news_items)
 
 if __name__ == '__main__':

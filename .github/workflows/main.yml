@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - master
-#  schedule:
-    # Runs ever 5 minutues
-#    - cron:  '*/5 * * * *'
+  schedule:
+     Runs ever 5 minutues
+    - cron:  '*/15 * * * *'
 
 jobs:
   build:
