@@ -1,6 +1,6 @@
 
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta, time
 import openai
 
 import requests
@@ -112,6 +112,36 @@ def get_cnbc_premarket():
 
     headlines = []
     news_items = []
+    api_key = ALPACA_KEY
+    secret = ALPACA_SECRET
+    paper_url = ALPACA_URL
+
+    url = URL(paper_url)
+
+    a_client = REST(key_id=api_key, secret_key=secret, base_url=url)
+
+    clock = a_client.get_clock()
+
+    # Get the opening timestamp
+    market_open_time = clock.next_open.replace(tzinfo=None)  # Convert to naive datetime
+
+    print("Opening Timestamp:", market_open_time)
+
+    # market_open_time = time(hour=9, minute=30)
+
+    # Get the current Eastern Time
+    current_time = datetime.now() - timedelta(
+        hours=4)  # Alpaca timestamps are in Eastern Time (UTC-4 in daylight saving time)
+
+    # Calculate the time difference between current time and market open time
+    time_difference = current_time - market_open_time
+
+    # Check if the time difference is within 30 minutes
+    within_30_minutes = timedelta(minutes=0) <= time_difference <= timedelta(minutes=30)
+
+    if within_30_minutes == False:
+        return
+
     # only care about premarket headlines for now
     for headline in soup.find_all('a',
                                   class_='Card-title'):  # Adjust the class according to the website's HTML structure
@@ -153,18 +183,6 @@ def get_cnbc_premarket():
             ticker_sentiment.parent = found_news_item
             found_news_item.ticker_sentiments.append(ticker_sentiment)
 
-
-    api_key = ALPACA_KEY
-    secret = ALPACA_SECRET
-    paper_url = ALPACA_URL
-
-    url = URL(paper_url)
-
-    a_client = REST(key_id=api_key, secret_key=secret, base_url=url)
-    a_client.cancel_all_orders()
-
-
-    snapshot_client = get_historic_client()
     place_trades(client=a_client, news_items=news_items)
 
 if __name__ == '__main__':
