@@ -83,8 +83,8 @@ def place_trades(client: REST, news_items: PremarketArticle):
                 ticker = article.ticker
             except:
                 print("Ticker isn't defined")
-            has_order = ticker and len(orders) and [x for x in orders if x.symbol == ticker]
-            has_position = ticker and len(positions) and article.ticker in positions.index
+            has_order = ticker != 'undefined' and len(orders) and [x for x in orders if x.symbol == ticker]
+            has_position = ticker != 'undefined' and len(positions) and article.ticker in positions.index
             if has_order == False and has_position == False:
                 snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
@@ -140,6 +140,7 @@ def get_cnbc_premarket():
     within_30_minutes = timedelta(minutes=0) <= time_difference <= timedelta(minutes=30)
 
     if within_30_minutes == False:
+        print('Market not ready')
         return
 
     # only care about premarket headlines for now
@@ -152,8 +153,8 @@ def get_cnbc_premarket():
             news_items.append(news_item)
             headlines.append(headline_text)
 
+    # Get the last news item
     news_items = news_items[:1]
-    # Step 3: Visit each link, fetch content, and extract articles and tickers
     for found_news_item in news_items:
 
         article_response = requests.get(found_news_item.link)
@@ -184,6 +185,8 @@ def get_cnbc_premarket():
             found_news_item.ticker_sentiments.append(ticker_sentiment)
 
     place_trades(client=a_client, news_items=news_items)
+
+    #check trades
 
 if __name__ == '__main__':
     get_cnbc_premarket()
