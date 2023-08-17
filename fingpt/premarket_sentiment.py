@@ -1,7 +1,8 @@
 
 import pandas as pd
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, timezone
 import openai
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -53,13 +54,10 @@ def get_result_from_openai_gpt4( prompt_str: str):
 def convert_message_to_side(message: str):
     if ("mean-reversion-short" in message):
         return 'sell'
-
     if ("mean-reversion-long" in message):
         return 'buy'
-
     if ("trend-following-long" in message):
         return 'buy'
-
     if ("trend-following-short" in message):
         return 'sell'
     if ("hold" in message):
@@ -93,12 +91,14 @@ def place_trades(client: REST, news_items: PremarketArticle):
                 if last_trade_time.date() == article_timestamp.date() and current_timestamp.date() == article_timestamp.date():
                     try:
                         current_price = snapshot[ticker].latest_trade.price
-                        trailing_price = 3  # Trailing stop percentage
+                        trailing_price = 3
+                        type="market"
+                        order_class = "bracket"
                         trailing_loss_price = -3
                         trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
                         trailing_take_profit = current_price * (1 - trailing_price / 100)
-                        order = client.submit_order(symbol=ticker, qty=1, side=side, type="limit", limit_price=current_price, stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_take_profit}, time_in_force="gtc")
-                        print(order)
+                        order = client.submit_order(symbol=ticker, qty=1, side=side, type="market")
+                        #order = client.submit_order(symbol=ticker, qty=1, side=side, type=type, order_class=order_class,  stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_stop_price}, time_in_force="gtc")
                     except Exception as inst:
                         print(inst)
 
@@ -122,24 +122,28 @@ def get_cnbc_premarket():
 
     clock = a_client.get_clock()
 
-    # Get the opening timestamp
-    market_open_time = clock.next_open.replace(tzinfo=None)  # Convert to naive datetime
+    opening_time = clock.next_open.replace(tzinfo=timezone.utc).timestamp()
+    curr_time = clock.timestamp.replace(tzinfo=timezone.utc).timestamp()
+    time_to_open = int((opening_time - curr_time) / 60)
+    print(str(time_to_open) + " minutes til market open.")
 
-    print("Opening Timestamp:", market_open_time)
+    # Get the opening timestamp
+    # market_open_time = clock.next_open.replace(tzinfo=None)  # Convert to naive datetime
+    # market_open_time = datetime.fromtimestamp(market_open_time)
+    # print("Opening Timestamp:", market_open_time)
 
     # market_open_time = time(hour=9, minute=30)
 
     # Get the current Eastern Time
-    current_time = datetime.now() - timedelta(
-        hours=4)  # Alpaca timestamps are in Eastern Time (UTC-4 in daylight saving time)
+    # current_time = datetime.now() + timedelta(days=1)
 
     # Calculate the time difference between current time and market open time
-    time_difference = current_time - market_open_time
+    # time_difference = current_time.timestamp() - market_open_time.timestamp()
 
     # Check if the time difference is within 30 minutes
-    within_30_minutes = timedelta(minutes=0) <= time_difference <= timedelta(minutes=30)
+    # within_30_minutes = timedelta(minutes=0) <= time_difference <= timedelta(minutes=30)
 
-    if within_30_minutes == False:
+    if time_to_open <= 30:
         print('Market not ready')
         return
 
