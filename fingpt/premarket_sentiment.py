@@ -92,11 +92,11 @@ def place_trades(client: REST, news_items: PremarketArticle):
                     try:
                         current_price = snapshot[ticker].latest_trade.price
                         trailing_price = 3
-                        type="market"
-                        order_class = "bracket"
+                        # type="market"
+                        # order_class = "bracket"
                         trailing_loss_price = -3
-                        trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
-                        trailing_take_profit = current_price * (1 - trailing_price / 100)
+                        # trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
+                        # trailing_take_profit = current_price * (1 - trailing_price / 100)
                         order = client.submit_order(symbol=ticker, qty=1, side=side, type="market")
                         #order = client.submit_order(symbol=ticker, qty=1, side=side, type=type, order_class=order_class,  stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_stop_price}, time_in_force="gtc")
                     except Exception as inst:
@@ -127,26 +127,14 @@ def get_cnbc_premarket():
     time_to_open = int((opening_time - curr_time) / 60)
     print(str(time_to_open) + " minutes til market open.")
 
-    # Get the opening timestamp
-    # market_open_time = clock.next_open.replace(tzinfo=None)  # Convert to naive datetime
-    # market_open_time = datetime.fromtimestamp(market_open_time)
-    # print("Opening Timestamp:", market_open_time)
-
-    # market_open_time = time(hour=9, minute=30)
-
-    # Get the current Eastern Time
-    # current_time = datetime.now() + timedelta(days=1)
-
-    # Calculate the time difference between current time and market open time
-    # time_difference = current_time.timestamp() - market_open_time.timestamp()
-
-    # Check if the time difference is within 30 minutes
-    # within_30_minutes = timedelta(minutes=0) <= time_difference <= timedelta(minutes=30)
-
     if time_to_open <= 30:
         print('Market not ready')
         return
 
+    #remove all positions
+    #a_client.close_all_positions()
+
+    #check if current positions have been opened today
     # only care about premarket headlines for now
     for headline in soup.find_all('a',
                                   class_='Card-title'):  # Adjust the class according to the website's HTML structure

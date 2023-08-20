@@ -22,3 +22,6 @@ openai
 
 #environment variables
 python-dotenv
+
+#vectorbt
+vectorbt
