@@ -7,7 +7,6 @@ import argparse
 import os
 import math
 import sys
-from datasets import load_dataset
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler

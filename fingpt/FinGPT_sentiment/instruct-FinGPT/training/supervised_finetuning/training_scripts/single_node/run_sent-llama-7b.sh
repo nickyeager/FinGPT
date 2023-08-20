@@ -13,9 +13,9 @@ if [ "$ZERO_STAGE" == "" ]; then
 fi
 mkdir -p $OUTPUT
 
-deepspeed main.py \
+python3 main.py \
    --data_path zeroshot/twitter-financial-news-sentiment chiapudding/kaggle-financial-sentiment \
-   --data_split 10,0,0 \
+   --data_split 2,4,4 \
    --model_name_or_path decapoda-research/llama-7b-hf \
    --per_device_train_batch_size 4 \
    --per_device_eval_batch_size 4 \

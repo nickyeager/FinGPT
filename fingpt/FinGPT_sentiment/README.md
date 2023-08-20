@@ -48,7 +48,7 @@ Experimental results on the Twitter Val dataset.
 [^2^]: [https://arxiv.org/abs/2210.02414]
 [^3^]: [https://arxiv.org/abs/2302.13971]
 
-### A showcase of RAG-instruction-tuned LLM
+### An showcase of RAG-instruction-tuned LLM
 ![Case](assets/showcase.png)
 
 ## Installation and Usage
@@ -64,18 +64,20 @@ cd fingpt/FinGPT_sentiment
 pip install -r requirements.txt
 ```
 
-3. Instructions on how to run the model, fine-tune, or evaluate can be found in the respective directories (`instruction-FinGPT`, `multisource_retrieval`). Note the generated .csv file from multisource_retrieval is the input for the instruction-tuned LLM during evaluation.
+3. Instructions on how to run the model, fine-tune, or evaluate can be found in the respective directories (`instruction-FinGPT`, `multisource_retrieval`). Note the generated .csv file from multisource_retrieval is the input for instruction tuned LLM during evaluation.
 
 ## Citation
 
 If you find our work useful or use it in your projects, please consider citing our original paper. The bibtex reference will be updated once available.
 
 ```
-@article{zhang2023instructfingpt,
+@misc{zhang2023instructfingpt,
       title={Instruct-FinGPT: Financial Sentiment Analysis by Instruction Tuning of General-Purpose Large Language Models}, 
       author={Boyu Zhang and Hongyang Yang and Xiao-Yang Liu},
-      journal={FinLLM Symposium at IJCAI 2023},
-      year={2023}
+      year={2023},
+      eprint={2306.12659},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
 }
 ```
 
