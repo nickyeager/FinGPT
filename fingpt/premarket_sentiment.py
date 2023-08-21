@@ -83,7 +83,7 @@ def place_trades(client: REST, news_items: PremarketArticle):
                 print("Ticker isn't defined")
             has_order = ticker != 'undefined' and len(orders) and [x for x in orders if x.symbol == ticker]
             has_position = ticker != 'undefined' and len(positions) and article.ticker in positions.index
-            if has_order == False and has_position == False:
+            if len(has_order) == 0 and has_position == False:
                 snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
                 last_trade_time = snapshot[ticker].latest_trade.timestamp
