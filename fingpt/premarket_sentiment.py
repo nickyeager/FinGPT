@@ -127,7 +127,7 @@ def get_cnbc_premarket():
     time_to_open = int((opening_time - curr_time) / 60)
     print(str(time_to_open) + " minutes til market open.")
 
-    if time_to_open <= 30:
+    if time_to_open >= 30:
         print('Market not ready')
         return
 
