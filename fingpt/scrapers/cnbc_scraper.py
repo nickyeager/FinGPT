@@ -2,9 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import urllib
 import sys
-# sys.path.append("../..")
+sys.path.append("../Models")
 
-from ..FinGPT_sentiment.Models import PremarketArticle, TickerSentiment
+from Models import PremarketArticle, TickerSentiment
 
 # Tested: python src/scrapers/cnbc/scrape_cnbc.py https://www.cnbc.com/2020/01/02/fda-issues-ban-on-some-flavored-vaping-products.html "FDA issues ban on some fruit and mint flavored vaping products"
 # https://www.cnbc.com/2019/12/06/amazon-blames-holiday-delivery-delays-on-winter-storms-and-high-demand.html?__source=twitter%7Cmain "Amazon blames holiday delivery delays on winter storms and high demand"
@@ -38,7 +38,7 @@ def check_headline_content(headline, search_terms):
     for term in search_terms:
         if term in headline.lower():
             return True
-
+    return False
 
 
 def scrape_cnbc_premarket(url, page):
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     # Extract the arguments
     url = "https://cnbc.com/market-insider"
-    subject = sys.argv[2]
+
 
     result = scrape_cnbc_premarket(url, 1)
     print("Scraped Result:", result)

@@ -5,3 +5,4 @@ class PremarketArticle:
         self.timestamp = None
         self.ticker_sentiments = []
         self.side = None
+        self.sentiment = None

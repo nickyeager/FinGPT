@@ -4,5 +4,5 @@ class TickerSentiment:
         self.ticker = ticker
         self.text = None
 
-        self.meanSentiment = None
+        self.mean_sentiment = None
         self.parent = None
