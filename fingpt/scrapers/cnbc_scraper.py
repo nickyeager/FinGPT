@@ -2,12 +2,18 @@ import requests
 from bs4 import BeautifulSoup
 import urllib
 import sys
-sys.path.append("../Models")
+import openai
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from Models import PremarketArticle, TickerSentiment
+from Prompts import PremarketStockClassification
+# from Prompts.PremarketStockClassification import Prompts
+import Prompts
 
-# Tested: python src/scrapers/cnbc/scrape_cnbc.py https://www.cnbc.com/2020/01/02/fda-issues-ban-on-some-flavored-vaping-products.html "FDA issues ban on some fruit and mint flavored vaping products"
-# https://www.cnbc.com/2019/12/06/amazon-blames-holiday-delivery-delays-on-winter-storms-and-high-demand.html?__source=twitter%7Cmain "Amazon blames holiday delivery delays on winter storms and high demand"
+import API
+OPEN_AI_KEY = os.getenv('OPEN_AI_KEY')
 
 def requests_get(url):
     try:
@@ -41,6 +47,20 @@ def check_headline_content(headline, search_terms):
     return False
 
 
+def get_result_from_openai_gpt4( prompt_str: str):
+    max_tokens = 64
+    openai.api_key = OPEN_AI_KEY
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=prompt_str,
+        temperature=0,
+        max_tokens=max_tokens,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return response
+
 def scrape_cnbc_premarket(url, page):
     try:
         news_items = []
@@ -55,6 +75,30 @@ def scrape_cnbc_premarket(url, page):
             if is_premarket_headline:
                 news_item = PremarketArticle.PremarketArticle(headline_text, headline['href'])
                 news_items.append(news_item)
+
+        news_items = news_items[:1]
+        for found_news_item in news_items:
+            article_response = requests.get(found_news_item.link)
+            article_soup = BeautifulSoup(article_response.content, 'html.parser')
+            time = article_soup.find('time').get('datetime')
+
+            found_news_item.timestamp = time
+            all_articles = article_soup.find_all('span', class_='QuoteInBody-quoteNameContainer')
+            for an_article in all_articles:
+                text = an_article.parent.text.strip()
+                ticker = an_article.find('a')['href'].split('/')
+                ticker = ticker[2]
+                ticker_sentiment = TickerSentiment.TickerSentiment(ticker, text)
+                article_prompt_string = PremarketStockClassification.StockClassificationV1
+                mean_reversion_result = get_result_from_openai_gpt4([{"content": text + article_prompt_string, "role": "user"}])
+                #found_news_item.meanSentiment = meanReversionResult
+                choice = mean_reversion_result.choices[0].get('message').get('content')
+                side = Prompts.Prompts.convert_message_to_side(choice)
+                ticker_sentiment.side = side
+
+                ticker_sentiment.mean_sentiment = mean_reversion_result
+                ticker_sentiment.parent = found_news_item
+                found_news_item.ticker_sentiments.append(ticker_sentiment)
 
     except Exception as e:
         print("Exception in scrape_cnbc_article_page:", e)

@@ -7,9 +7,9 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from scrapers.Models import PremarketArticle, TickerSentiment
+from scrapers.Prompts import PremarketStockClassification
 
-from alpaca_trade_api.rest import REST, TimeFrame, URL
-
+from alpaca_trade_api.rest import REST, URL
 
 from alpaca.data import StockHistoricalDataClient, StockSnapshotRequest
 import os
@@ -98,7 +98,7 @@ def place_trades(client: REST, news_items: PremarketArticle):
                         # trailing_stop_price = current_price * (1 - trailing_loss_price / 100)
                         # trailing_take_profit = current_price * (1 - trailing_price / 100)
                         order = client.submit_order(symbol=ticker, qty=1, side=side, type="market")
-                        #order = client.submit_order(symbol=ticker, qty=1, side=side, type=type, order_class=order_class,  stop_loss={"stop_price": trailing_stop_price, "limit_price": trailing_stop_price}, time_in_force="gtc")
+                        print("Order added")
                     except Exception as inst:
                         print(inst)
 
@@ -160,13 +160,7 @@ def get_cnbc_premarket():
             ticker = an_article.find('a')['href'].split('/')
             ticker = ticker[2]
             ticker_sentiment = TickerSentiment.TickerSentiment(ticker, text)
-            article_prompt_string = """Your a switch statement, only returning the following string based on the text passed in: 'mean-reversion-short', 'mean-reversion-long', 'trend-following-short', 'trend-following-long'. also, output a rating of 0-100 based on the severity of these ratings 
-            If a stock has risen in premarket and according to the article summary rose because of an analysts recommendation or because of the news, return the text 'mean-reversion-short'.
-            If a stock has fallen in premarket and according to the article fell because of a financial analysts change in recommendation or because of a news item ONLY return the text 'mean-reversion long'.
-             If a stock has fallen in premarket and according to the article summary because of earnings ONLY return the text 'trend-following-short'
-             If a stock has risen in premarket and according to the article summary because of earnings ONLY return the text'trend-following-long'
-             If a stock price has changed because of an acquisition ONLY return 'hold'
-            """
+            article_prompt_string = PremarketStockClassification.StockClassificationV1
             mean_reversion_result = get_result_from_openai_gpt4([{"content": text + article_prompt_string, "role": "user"}])
             #found_news_item.meanSentiment = meanReversionResult
             choice = mean_reversion_result.choices[0].get('message').get('content')
