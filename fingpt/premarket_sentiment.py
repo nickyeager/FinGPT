@@ -2,7 +2,6 @@
 import pandas as pd
 from datetime import datetime, timedelta, time, timezone
 import openai
-import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -84,7 +83,10 @@ def place_trades(client: REST, news_items: PremarketArticle):
             has_order = ticker != 'undefined' and len(orders) and [x for x in orders if x.symbol == ticker]
             has_position = ticker != 'undefined' and len(positions) and article.ticker in positions.index
             if has_order == False and has_position == False:
-                snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
+                try:
+                    snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
+                except:
+                    print("Historic data couldn't be loaded")
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
                 last_trade_time = snapshot[ticker].latest_trade.timestamp
                 side = article.side
@@ -117,11 +119,8 @@ def get_cnbc_premarket():
     paper_url = ALPACA_URL
 
     url = URL(paper_url)
-
     a_client = REST(key_id=api_key, secret_key=secret, base_url=url)
-
     clock = a_client.get_clock()
-
     opening_time = clock.next_open.replace(tzinfo=timezone.utc).timestamp()
     curr_time = clock.timestamp.replace(tzinfo=timezone.utc).timestamp()
     time_to_open = int((opening_time - curr_time) / 60)

@@ -10,7 +10,7 @@ load_dotenv()
 from Models import PremarketArticle, TickerSentiment
 from Prompts import PremarketStockClassification
 # from Prompts.PremarketStockClassification import Prompts
-import Prompts
+# import Prompts
 
 import API
 OPEN_AI_KEY = os.getenv('OPEN_AI_KEY')
@@ -99,6 +99,8 @@ def scrape_cnbc_premarket(url, page):
                 ticker_sentiment.mean_sentiment = mean_reversion_result
                 ticker_sentiment.parent = found_news_item
                 found_news_item.ticker_sentiments.append(ticker_sentiment)
+
+        return news_items
 
     except Exception as e:
         print("Exception in scrape_cnbc_article_page:", e)
