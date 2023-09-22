@@ -87,6 +87,7 @@ def place_trades(client: REST, news_items: PremarketArticle):
                     snapshot = get_historic_data(client=snapshot_client, ticker=ticker)
                 except:
                     print("Historic data couldn't be loaded")
+                    continue
                 # get the current price, ideally right before the trade. This should happen within 5 minutes of the opening bell.
                 last_trade_time = snapshot[ticker].latest_trade.timestamp
                 side = article.side
